@@ -9,7 +9,10 @@ jobs:
       - uses: actions/checkout@v4
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: |
-          ffmpeg -y -f lavfi -i "color=c=0x0D0D0D:s=1080x1920:d=5" -vf "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:text='IDAN':fontcolor=white:fontsize=250:x=(w-text_w)/2:y=(h-text_h)/2" -c:v libx264 -pix_fmt yuv420p -r 30 out.mp4
+          # Create video with fade-in animation
+          ffmpeg -y -f lavfi -i "color=c=0x0D0D0D:s=1080x1920:d=5" \
+            -vf "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:text='IDAN':fontcolor=white:fontsize=250:x=(w-text_w)/2:y=(h-text_h)/2:alpha='if(lt(t,0.5),0,if(lt(t,1.5),t-0.5,if(lt(t,4),1,5-t)))'" \
+            -c:v libx264 -pix_fmt yuv420p -r 30 out.mp4
       - uses: actions/upload-artifact@v4
         with:
           name: idan-logo-video
