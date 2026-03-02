@@ -1,32 +1,16 @@
 name: Render Video
-
 on:
   push:
     branches: [master]
-
 jobs:
   render:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Install FFmpeg
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
-      
-      - name: Create animated logo video
-        run: |
-          ffmpeg -y -f lavfi -i "color=c=0x0D0D0D:s=1080x1920:d=5" \
-            -vf "
-              drawbox=color=0x8F67F5@0.2:x=200:y=400:w=680:h=1120:rounded=40,
-              drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:text='IDAN':fontcolor=0x1a1a1a:fontsize=280:x=541:y=961:borderw=8:bordercolor=0x000000:enable='between(t,0,5)',
-              drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:text='IDAN':fontcolor=0x3a3a3a:fontsize=280:x=538:y=958:borderw=6:bordercolor=0x000000:enable='between(t,0,5)',
-              drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:text='IDAN':fontcolor=white:fontsize=280:x=540:y=960:enable='between(t,0,5)',
-              drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:text='MOTION DESIGN':fontcolor=0x8F67F5:fontsize=50:x=(w-text_w)/2:y=h-300:enable='between(t,1,5)'
-            " \
-            -c:v libx264 -pix_fmt yuv420p -r 30 out.mp4
-        
-      - name: Upload
-        uses: actions/upload-artifact@v4
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: |
+          ffmpeg -y -f lavfi -i "color=c=0x0D0D0D:s=1080x1920:d=5" -vf "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:text='IDAN':fontcolor=white:fontsize=250:x=(w-text_w)/2:y=(h-text_h)/2" -c:v libx264 -pix_fmt yuv420p -r 30 out.mp4
+      - uses: actions/upload-artifact@v4
         with:
           name: idan-logo-video
           path: out.mp4
