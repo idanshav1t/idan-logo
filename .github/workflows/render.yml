@@ -13,9 +13,28 @@ jobs:
       - name: Install FFmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
       
-      - name: Create video with text
+      - name: Create animated video
         run: |
-          ffmpeg -f lavfi -i color=c=#1a1a2e:s=1280x720:d=5 -vf "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:text='Idan':fontcolor=#8F67F5:fontsize=120:x=(w-text_w)/2:y=(h-text_h)/2" -c:v libx264 -pix_fmt yuv420p -y out.mp4
+          # Create gradient background + animated text
+          ffmpeg -y \
+            -f lavfi -i "color=c=0x0D0D0D:s=1080x1920:d=5" \
+            -f lavfi -i "cellauto=rule=110:s=1080x1920:seed=random:fps=30" \
+            -f lavfi -i "sine=frequency=440:duration=5" \
+            -filter_complex "
+              [0]format=rgba[bg];
+              
+              [bg]drawbox=color=0x8F67F5@0.15:x=0:y=0:w=1080:h=300:rounded=0,
+              drawbox=color=0x8F67F5@0.15:x=0:y=1620:w=1080:h=300:rounded=0,
+              drawbox=color=0xD0C4F2@0.1:x=0:y=0:w=50:h=1920:rounded=0,
+              drawbox=color=0xD0C4F2@0.1:x=1030:y=0:w=50:h=1920:rounded=0[bg2];
+              
+              [bg2]drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:text='IDAN':fontcolor=white:fontsize=280:x=(w-text_w)/2:y=(h-text_h)/2-50:alpha='if(lt(t,1),t,if(lt(t,1.5),1,if(lt(t,4),1,5-t)))'[text];
+              
+              [text]drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:text='IDAN':fontcolor=0x8F67F5:fontsize=120:x=(w-text_w)/2:y=(h-text_h)/2+200:alpha='if(lt(t,2),0,if(lt(t,2.5),(t-2)*2,if(lt(t,4.5),1,5-t)))'[text2];
+              
+              [text2]scale=iw:ih[final]
+            " \
+            -map "[final]" -c:v libx264 -pix_fmt yuv420p -r 30 out.mp4
         
       - name: Upload video
         uses: actions/upload-artifact@v4
