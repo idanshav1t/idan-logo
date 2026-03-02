@@ -10,19 +10,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          
       - name: Install FFmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
-          
-      - name: Install dependencies
-        run: npm install
-        
-      - name: Build video
-        run: npx @remotion/cli render src/index.tsx out.mp4 --codec h264
+      
+      - name: Create video with text
+        run: |
+          ffmpeg -f lavfi -i color=c=#1a1a2e:s=1280x720:d=5 -vf "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:text='Idan':fontcolor=#8F67F5:fontsize=120:x=(w-text_w)/2:y=(h-text_h)/2" -c:v libx264 -pix_fmt yuv420p -y out.mp4
         
       - name: Upload video
         uses: actions/upload-artifact@v4
